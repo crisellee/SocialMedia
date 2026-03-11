@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
+import '../models/post.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
 
-  @override
-  State<NotificationScreen> createState() => _NotificationScreenState();
-}
-
-class _NotificationScreenState extends State<NotificationScreen> {
-  // Sample data para sa notifications
-  List<Map<String, dynamic>> notifications = [
+  // Ginawa nating static para ma-access sa main.dart
+  static List<Map<String, dynamic>> notifications = [
     {
       "id": 1,
       "title": "New Reel Like",
@@ -17,33 +13,28 @@ class _NotificationScreenState extends State<NotificationScreen> {
       "time": "2m ago",
       "isRead": false
     },
-    {
-      "id": 2,
-      "title": "New Message",
-      "body": "May bagong message ka mula sa iyong kaibigan.",
-      "time": "15m ago",
-      "isRead": false
-    },
-    {
-      "id": 3,
-      "title": "System Update",
-      "body": "Tapos na ang maintenance ng server.",
-      "time": "1h ago",
-      "isRead": true
-    },
   ];
 
-  void markAllAsRead() {
-    setState(() {
-      for (var item in notifications) {
-        item['isRead'] = true;
-      }
+  static void addPostNotification(PostData post) {
+    notifications.insert(0, {
+      "id": DateTime.now().millisecondsSinceEpoch,
+      "title": "New Post Uploaded",
+      "body": "You successfully posted: ${post.caption}",
+      "time": "Just now",
+      "isRead": false
     });
   }
 
-  void removeNotification(int index) {
+  @override
+  State<NotificationScreen> createState() => _NotificationScreenState();
+}
+
+class _NotificationScreenState extends State<NotificationScreen> {
+  void markAllAsRead() {
     setState(() {
-      notifications.removeAt(index);
+      for (var item in NotificationScreen.notifications) {
+        item['isRead'] = true;
+      }
     });
   }
 
@@ -59,52 +50,27 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
         ],
       ),
-      body: notifications.isEmpty
+      body: NotificationScreen.notifications.isEmpty
           ? const Center(child: Text("Walang notifications dito."))
           : ListView.builder(
-        itemCount: notifications.length,
-        itemBuilder: (context, index) {
-          final item = notifications[index];
-          return Dismissible(
-            key: Key(item['id'].toString()),
-            direction: DismissDirection.endToStart,
-            background: Container(
-              color: Colors.red,
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: const Icon(Icons.delete, color: Colors.white),
-            ),
-            onDismissed: (direction) {
-              removeNotification(index);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Notification deleted")),
-              );
-            },
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: item['isRead'] ? Colors.grey[300] : Colors.blue[100],
-                child: Icon(
-                  Icons.notifications,
-                  color: item['isRead'] ? Colors.grey : Colors.blue,
-                ),
-              ),
-              title: Text(
-                item['title'],
-                style: TextStyle(
-                  fontWeight: item['isRead'] ? FontWeight.normal : FontWeight.bold,
-                ),
-              ),
-              subtitle: Text("${item['body']}\n${item['time']}"),
-              isThreeLine: true,
-              onTap: () {
-                setState(() {
-                  item['isRead'] = true;
-                });
+              itemCount: NotificationScreen.notifications.length,
+              itemBuilder: (context, index) {
+                final item = NotificationScreen.notifications[index];
+                return ListTile(
+                  leading: const CircleAvatar(
+                    child: Icon(Icons.post_add, color: Colors.blue),
+                  ),
+                  title: Text(
+                    item['title'],
+                    style: TextStyle(
+                      fontWeight: item['isRead'] ? FontWeight.normal : FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Text("${item['body']}\n${item['time']}"),
+                  isThreeLine: true,
+                );
               },
             ),
-          );
-        },
-      ),
     );
   }
 }

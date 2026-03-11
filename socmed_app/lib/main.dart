@@ -3,7 +3,12 @@ import 'screens/home_screen.dart';
 import 'screens/explore_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/search_screen.dart';
+import 'screens/messsage_screen.dart';
+import 'screens/reels_screen.dart';
+import 'screens/notification_screen.dart';
+import 'screens/create_post_screen.dart';
 import 'widgets/instagram_widgets.dart';
+import 'models/post.dart';
 
 void main() {
   runApp(const InstagramClone());
@@ -52,15 +57,30 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _updateScreens();
+  }
+
+  void _updateScreens() {
     _screens = [
-      HomeScreen(onProfileTap: () => _navigateToProfile()), // Index 0
-      const SearchScreen(),  // Index 1
-      const ExploreScreen(), // Index 2
-      const Center(child: Text('Reels Section')), // Index 3
-      const Center(child: Text('Messages Section')), // Index 4
-      const Center(child: Text('Notifications Section')), // Index 5
-      const Center(child: Text('Create Post Section')), // Index 6
-      const ProfileScreen(), // Index 7
+      HomeScreen(
+        onProfileTap: () => _navigateToProfile(),
+        onMessagesTap: () => _navigateToMessages(),
+        onNotificationsTap: () => _navigateToNotifications(),
+      ),
+      const SearchScreen(),
+      const ExploreScreen(),
+      const ReelsScreen(),
+      const MessengerScreen(),
+      const NotificationScreen(),
+      CreatePostScreen(onPost: (newPost) {
+        setState(() {
+          posts.insert(0, newPost);
+          NotificationScreen.addPostNotification(newPost);
+          _selectedIndex = 0;
+          _updateScreens();
+        });
+      }),
+      const ProfileScreen(),
     ];
   }
 
@@ -70,17 +90,32 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _navigateToMessages() {
+    setState(() {
+      _selectedIndex = 4;
+    });
+  }
+
+  void _navigateToNotifications() {
+    setState(() {
+      _selectedIndex = 5;
+    });
+  }
+
   int _getDisplayScreenIndex() {
     bool isWeb = MediaQuery.of(context).size.width > 800;
     if (isWeb) {
       return _selectedIndex; 
     } else {
+      if (_selectedIndex == 4 && _screens[_selectedIndex] is MessengerScreen) return 4;
+      if (_selectedIndex == 5 && _screens[_selectedIndex] is NotificationScreen) return 5;
+      
       switch (_selectedIndex) {
-        case 0: return 0; // Home
-        case 1: return 2; // Mobile Search Icon -> Explore Grid
-        case 2: return 3; // Reels
-        case 3: return 6; // Add Post
-        case 4: return 7; // Profile
+        case 0: return 0;
+        case 1: return 2;
+        case 2: return 3;
+        case 3: return 6;
+        case 4: return 7;
         default: return 0;
       }
     }
@@ -101,22 +136,17 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildMobileLayout(int screenIndex) {
     return Scaffold(
-      appBar: (screenIndex == 0) 
-        ? AppBar(
-            title: const Text('Instagram'),
-            actions: [
-              IconButton(onPressed: () {}, icon: const Icon(Icons.favorite_border)),
-              IconButton(onPressed: () {}, icon: const Icon(Icons.chat_bubble_outline)),
-            ],
-          )
-        : null,
       body: IndexedStack(
         index: screenIndex,
         children: _screens,
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
+        currentIndex: _selectedIndex > 4 ? 4 : _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
         type: BottomNavigationBarType.fixed,
         showSelectedLabels: false,
         showUnselectedLabels: false,
