@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:share_plus/share_plus.dart';
 
+
 class Reel {
   final String id;
   final String username;
@@ -12,6 +13,8 @@ class Reel {
   String reaction;
   int likesCount;
   final List<String> comments;
+  bool isFollowing;
+
 
   Reel({
     required this.id,
@@ -23,17 +26,22 @@ class Reel {
     this.reaction = 'None',
     this.likesCount = 0,
     List<String>? comments,
+    this.isFollowing = false,
   }) : comments = comments ?? [];
 }
 
+
 class ReelsScreen extends StatefulWidget {
   const ReelsScreen({super.key});
+
 
   @override
   State<ReelsScreen> createState() => _ReelsScreenState();
 }
 
+
 class _ReelsScreenState extends State<ReelsScreen> {
+
 
   final List<String> reelsVideos = [
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
@@ -47,6 +55,7 @@ class _ReelsScreenState extends State<ReelsScreen> {
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
 
+
     // 5 additional reels
     "https://samplelib.com/lib/preview/mp4/sample-5s.mp4",
     "https://samplelib.com/lib/preview/mp4/sample-10s.mp4",
@@ -54,6 +63,7 @@ class _ReelsScreenState extends State<ReelsScreen> {
     "https://samplelib.com/lib/preview/mp4/sample-20s.mp4",
     "https://samplelib.com/lib/preview/mp4/sample-30s.mp4",
   ];
+
 
   late final List<Reel> _reels = List.generate(
     15,
@@ -70,6 +80,7 @@ class _ReelsScreenState extends State<ReelsScreen> {
     ),
   );
 
+
   void _handleReact(int index, String reaction) {
     setState(() {
       if (_reels[index].reaction == 'None' && reaction != 'None') {
@@ -81,11 +92,20 @@ class _ReelsScreenState extends State<ReelsScreen> {
     });
   }
 
+
   void _handleComment(int index, String comment) {
     setState(() {
       _reels[index].comments.add(comment);
     });
   }
+
+
+  void _handleFollow(int index) {
+    setState(() {
+      _reels[index].isFollowing = !_reels[index].isFollowing;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +119,7 @@ class _ReelsScreenState extends State<ReelsScreen> {
             reel: _reels[index],
             onReact: (react) => _handleReact(index, react),
             onComment: (comment) => _handleComment(index, comment),
+            onFollow: () => _handleFollow(index),
           );
         },
       ),
@@ -106,33 +127,42 @@ class _ReelsScreenState extends State<ReelsScreen> {
   }
 }
 
+
 class ReelItem extends StatefulWidget {
   final Reel reel;
   final Function(String) onReact;
   final Function(String) onComment;
+  final VoidCallback onFollow;
+
 
   const ReelItem({
     super.key,
     required this.reel,
     required this.onReact,
     required this.onComment,
+    required this.onFollow,
   });
+
 
   @override
   State<ReelItem> createState() => _ReelItemState();
 }
 
+
 class _ReelItemState extends State<ReelItem> {
-  bool _showReactions = false;
+  OverlayEntry? _reactionOverlay;
+  final GlobalKey _reactionButtonKey = GlobalKey();
   VideoPlayerController? _videoController;
 
+
   final List<Map<String, String>> reactions = [
-    {'name': 'Like', 'icon': '❤️', 'color': '0xFFF44336'},
-    {'name': 'Haha', 'icon': '😆', 'color': '0xFFFFC107'},
-    {'name': 'Wow', 'icon': '😮', 'color': '0xFFFFC107'},
-    {'name': 'Sad', 'icon': '😢', 'color': '0xFFFFC107'},
-    {'name': 'Angry', 'icon': '😡', 'color': '0xFFE91E63'},
+    {'name': 'Love', 'icon': '❤️'},
+    {'name': 'Haha', 'icon': '😆'},
+    {'name': 'Wow', 'icon': '😮'},
+    {'name': 'Sad', 'icon': '😢'},
+    {'name': 'Angry', 'icon': '😡'},
   ];
+
 
   @override
   void initState() {
@@ -147,35 +177,94 @@ class _ReelItemState extends State<ReelItem> {
     }
   }
 
+
   @override
   void dispose() {
+    _hideReactionPopup();
     _videoController?.dispose();
     super.dispose();
   }
 
-  void _toggleReactions() {
-    setState(() {
-      _showReactions = !_showReactions;
-    });
+
+  void _showReactionPopup() {
+    if (_reactionOverlay != null) return;
+
+
+    final overlay = Overlay.of(context);
+    final renderBox = _reactionButtonKey.currentContext!.findRenderObject() as RenderBox;
+    final position = renderBox.localToGlobal(Offset.zero);
+
+
+    _reactionOverlay = OverlayEntry(
+      builder: (_) => GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: _hideReactionPopup,
+        child: Stack(
+          children: [
+            Positioned(
+              top: position.dy - 60,
+              right: 20,
+              child: Material(
+                elevation: 8,
+                borderRadius: BorderRadius.circular(30),
+                color: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: reactions.map((r) {
+                      return GestureDetector(
+                        onTap: () {
+                          widget.onReact(r['name']!);
+                          _hideReactionPopup();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(r['icon']!, style: const TextStyle(fontSize: 24)),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+
+    overlay.insert(_reactionOverlay!);
   }
+
+
+  void _hideReactionPopup() {
+    _reactionOverlay?.remove();
+    _reactionOverlay = null;
+  }
+
 
   Widget _getReactionIcon() {
     if (widget.reel.reaction == 'None') {
       return const Icon(Icons.favorite_border, color: Colors.white, size: 30);
     }
-    if (widget.reel.reaction == 'Like') {
+    if (widget.reel.reaction == 'Love' || widget.reel.reaction == 'Like') {
       return const Icon(Icons.favorite, color: Colors.red, size: 30);
     }
+
 
     final react = reactions.firstWhere(
             (r) => r['name'] == widget.reel.reaction,
         orElse: () => reactions[0]);
 
+
     return Text(react['icon']!, style: const TextStyle(fontSize: 30));
   }
 
+
   void _showCommentSheet() {
     final TextEditingController controller = TextEditingController();
+
 
     showModalBottomSheet(
       context: context,
@@ -204,7 +293,18 @@ class _ReelItemState extends State<ReelItem> {
                           radius: 15,
                           backgroundImage:
                           NetworkImage('https://i.pravatar.cc/150?img=11')),
-                      title: Text(widget.reel.comments[i]),
+                      title: RichText(
+                        text: TextSpan(
+                          style: const TextStyle(color: Colors.black, fontSize: 14),
+                          children: [
+                            const TextSpan(
+                              text: 'itsmekriselz ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(text: widget.reel.comments[i]),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -241,9 +341,11 @@ class _ReelItemState extends State<ReelItem> {
     );
   }
 
+
   void _showShareOptions() {
     Share.share("${widget.reel.caption}\n${widget.reel.mediaUrl}");
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -251,12 +353,14 @@ class _ReelItemState extends State<ReelItem> {
       fit: StackFit.expand,
       children: [
 
+
         if (widget.reel.isVideo)
           _videoController!.value.isInitialized
               ? VideoPlayer(_videoController!)
               : const Center(child: CircularProgressIndicator())
         else
           Image.network(widget.reel.mediaUrl, fit: BoxFit.cover),
+
 
         Positioned(
           bottom: 20,
@@ -276,6 +380,26 @@ class _ReelItemState extends State<ReelItem> {
                       style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 15),
+                  GestureDetector(
+                    onTap: widget.onFollow,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.white),
+                        borderRadius: BorderRadius.circular(5),
+                        color: widget.reel.isFollowing ? Colors.transparent : Colors.transparent,
+                      ),
+                      child: Text(
+                        widget.reel.isFollowing ? 'Following' : 'Follow',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 10),
@@ -285,17 +409,20 @@ class _ReelItemState extends State<ReelItem> {
           ),
         ),
 
+
         Positioned(
           bottom: 20,
           right: 15,
           child: Column(
             children: [
 
+
               GestureDetector(
-                onLongPress: _toggleReactions,
+                key: _reactionButtonKey,
+                onLongPress: _showReactionPopup,
                 onTap: () {
                   if (widget.reel.reaction == 'None') {
-                    widget.onReact('Like');
+                    widget.onReact('Love');
                   } else {
                     widget.onReact('None');
                   }
@@ -303,10 +430,13 @@ class _ReelItemState extends State<ReelItem> {
                 child: _getReactionIcon(),
               ),
 
+
               Text(widget.reel.likesCount.toString(),
                   style: const TextStyle(color: Colors.white)),
 
+
               const SizedBox(height: 20),
+
 
               IconButton(
                 icon: const Icon(Icons.chat_bubble_outline,
@@ -314,10 +444,13 @@ class _ReelItemState extends State<ReelItem> {
                 onPressed: _showCommentSheet,
               ),
 
+
               Text(widget.reel.comments.length.toString(),
                   style: const TextStyle(color: Colors.white)),
 
+
               const SizedBox(height: 20),
+
 
               IconButton(
                 icon: const Icon(Icons.send_outlined,
@@ -331,3 +464,5 @@ class _ReelItemState extends State<ReelItem> {
     );
   }
 }
+
+

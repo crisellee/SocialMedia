@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import '../models/post.dart';
 import '../widgets/instagram_widgets.dart';
 
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
+
 
 class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
@@ -16,11 +19,13 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   String _bio = 'Flutter Developer | UI/UX Enthusiast\nLiving my best life ✨';
   final String _profileImageUrl = 'https://i.pravatar.cc/150?img=11';
 
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
   }
+
 
   @override
   void dispose() {
@@ -28,9 +33,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     super.dispose();
   }
 
+
   void _editProfile() {
     TextEditingController nameController = TextEditingController(text: _fullName);
     TextEditingController bioController = TextEditingController(text: _bio);
+
 
     showDialog(
       context: context,
@@ -67,6 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     );
   }
 
+
   void _showProfilePhoto() {
     showDialog(
       context: context,
@@ -90,6 +98,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     );
   }
 
+
   void _showPostDetail(PostData post) {
     Navigator.push(
       context,
@@ -112,6 +121,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -228,6 +238,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     );
   }
 
+
   Widget _buildPostGrid() {
     return GridView.builder(
       padding: const EdgeInsets.all(1),
@@ -249,6 +260,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       },
     );
   }
+
 
   Widget _buildReelsGrid() {
     return GridView.builder(
@@ -284,9 +296,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     );
   }
 
+
   Widget _buildSavedGrid() {
     final savedPosts = posts.where((p) => p.isSaved).toList();
-    
+
     if (savedPosts.isEmpty) {
       return const Center(
         child: Column(
@@ -300,6 +313,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         ),
       );
     }
+
 
     return GridView.builder(
       padding: const EdgeInsets.all(1),
@@ -322,6 +336,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     );
   }
 
+
   Column _buildStatColumn(String number, String label) {
     return Column(
       children: [
@@ -332,15 +347,19 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
 }
 
+
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   _SliverAppBarDelegate(this._tabBar);
 
+
   final TabBar _tabBar;
+
 
   @override
   double get minExtent => _tabBar.preferredSize.height;
   @override
   double get maxExtent => _tabBar.preferredSize.height;
+
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
@@ -350,8 +369,11 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
     );
   }
 
+
   @override
   bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
     return false;
   }
 }
+
+

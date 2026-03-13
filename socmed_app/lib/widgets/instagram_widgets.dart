@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/post.dart';
 
+
 class StoriesSection extends StatelessWidget {
   const StoriesSection({super.key});
+
 
   @override
   Widget build(BuildContext context) {
@@ -24,10 +26,10 @@ class StoriesSection extends StatelessWidget {
                     gradient: index == 0
                         ? null
                         : const LinearGradient(
-                            colors: [Colors.purple, Colors.orange, Colors.yellow],
-                            begin: Alignment.topRight,
-                            end: Alignment.bottomLeft,
-                          ),
+                      colors: [Colors.purple, Colors.orange, Colors.yellow],
+                      begin: Alignment.topRight,
+                      end: Alignment.bottomLeft,
+                    ),
                     border: index == 0 ? Border.all(color: Colors.grey.shade300) : null,
                   ),
                   child: Container(
@@ -50,20 +52,25 @@ class StoriesSection extends StatelessWidget {
   }
 }
 
+
 class PostCard extends StatefulWidget {
   final PostData post;
   final VoidCallback? onProfileTap; // Callback for profile navigation
 
+
   const PostCard({super.key, required this.post, this.onProfileTap});
+
 
   @override
   State<PostCard> createState() => _PostCardState();
 }
 
+
 class _PostCardState extends State<PostCard> {
   final GlobalKey _reactionButtonKey = GlobalKey();
   final TextEditingController _commentController = TextEditingController();
   OverlayEntry? _reactionOverlay;
+
 
   final List<Map<String, String>> reactionsList = [
     {'name': 'Love', 'icon': '❤️'},
@@ -73,6 +80,7 @@ class _PostCardState extends State<PostCard> {
     {'name': 'Angry', 'icon': '😡'},
   ];
 
+
   @override
   void dispose() {
     _hideReactionPopup();
@@ -80,12 +88,15 @@ class _PostCardState extends State<PostCard> {
     super.dispose();
   }
 
+
   void _showReactionPopup() {
     if (_reactionOverlay != null) return;
+
 
     final overlay = Overlay.of(context);
     final renderBox = _reactionButtonKey.currentContext!.findRenderObject() as RenderBox;
     final position = renderBox.localToGlobal(Offset.zero);
+
 
     _reactionOverlay = OverlayEntry(
       builder: (_) => GestureDetector(
@@ -130,13 +141,16 @@ class _PostCardState extends State<PostCard> {
       ),
     );
 
+
     overlay.insert(_reactionOverlay!);
   }
+
 
   void _hideReactionPopup() {
     _reactionOverlay?.remove();
     _reactionOverlay = null;
   }
+
 
   Widget _getReactionIcon() {
     if (widget.post.reaction == 'None') {
@@ -146,11 +160,12 @@ class _PostCardState extends State<PostCard> {
       return const Icon(Icons.favorite, color: Colors.red, size: 28);
     }
     final react = reactionsList.firstWhere(
-      (r) => r['name'] == widget.post.reaction,
+          (r) => r['name'] == widget.post.reaction,
       orElse: () => reactionsList[0],
     );
     return Text(react['icon']!, style: const TextStyle(fontSize: 24));
   }
+
 
   void _showMenuPopup() {
     showModalBottomSheet(
@@ -172,6 +187,7 @@ class _PostCardState extends State<PostCard> {
       ),
     );
   }
+
 
   void _showCommentSheet() {
     final TextEditingController controller = TextEditingController();
@@ -240,6 +256,7 @@ class _PostCardState extends State<PostCard> {
     );
   }
 
+
   void _showShareSheet() {
     showModalBottomSheet(
       context: context,
@@ -262,6 +279,7 @@ class _PostCardState extends State<PostCard> {
     );
   }
 
+
   void _addComment() {
     if (_commentController.text.isNotEmpty) {
       setState(() {
@@ -270,6 +288,7 @@ class _PostCardState extends State<PostCard> {
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -330,8 +349,8 @@ class _PostCardState extends State<PostCard> {
             ),
             const Spacer(),
             IconButton(
-              icon: Icon(widget.post.isSaved ? Icons.bookmark : Icons.bookmark_border, 
-                    color: widget.post.isSaved ? Colors.yellow[700] : Colors.black, size: 28),
+              icon: Icon(widget.post.isSaved ? Icons.bookmark : Icons.bookmark_border,
+                  color: widget.post.isSaved ? Colors.yellow[700] : Colors.black, size: 28),
               onPressed: () => setState(() => widget.post.isSaved = !widget.post.isSaved),
             ),
           ],
@@ -416,9 +435,11 @@ class _PostCardState extends State<PostCard> {
   }
 }
 
+
 class SuggestedSidebar extends StatelessWidget {
   final VoidCallback? onProfileTap;
   const SuggestedSidebar({super.key, this.onProfileTap});
+
 
   @override
   Widget build(BuildContext context) {
@@ -464,3 +485,5 @@ class SuggestedSidebar extends StatelessWidget {
     );
   }
 }
+
+

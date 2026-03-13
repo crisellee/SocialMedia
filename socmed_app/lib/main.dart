@@ -3,19 +3,22 @@ import 'screens/home_screen.dart';
 import 'screens/explore_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/search_screen.dart';
-import 'screens/messsage_screen.dart';
+import 'screens/message_screen.dart';
 import 'screens/reels_screen.dart';
 import 'screens/notification_screen.dart';
 import 'screens/create_post_screen.dart';
 import 'widgets/instagram_widgets.dart';
 import 'models/post.dart';
+import 'screens/chat_detail_screen.dart';
 
 void main() {
   runApp(const InstagramClone());
 }
 
+
 class InstagramClone extends StatelessWidget {
   const InstagramClone({super.key});
+
 
   @override
   Widget build(BuildContext context) {
@@ -43,22 +46,27 @@ class InstagramClone extends StatelessWidget {
   }
 }
 
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
+
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   late List<Widget> _screens;
+
 
   @override
   void initState() {
     super.initState();
     _updateScreens();
   }
+
 
   void _updateScreens() {
     _screens = [
@@ -70,7 +78,7 @@ class _HomePageState extends State<HomePage> {
       const SearchScreen(),
       const ExploreScreen(),
       const ReelsScreen(),
-      const MessengerScreen(),
+      MessagesScreen(),
       const NotificationScreen(),
       CreatePostScreen(onPost: (newPost) {
         setState(() {
@@ -84,11 +92,13 @@ class _HomePageState extends State<HomePage> {
     ];
   }
 
+
   void _navigateToProfile() {
     setState(() {
       _selectedIndex = MediaQuery.of(context).size.width > 800 ? 7 : 4;
     });
   }
+
 
   void _navigateToMessages() {
     setState(() {
@@ -96,35 +106,39 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+
   void _navigateToNotifications() {
     setState(() {
       _selectedIndex = 5;
     });
   }
 
+
   int _getDisplayScreenIndex() {
     bool isWeb = MediaQuery.of(context).size.width > 800;
     if (isWeb) {
-      return _selectedIndex; 
+      return _selectedIndex;
     } else {
-      if (_selectedIndex == 4 && _screens[_selectedIndex] is MessengerScreen) return 4;
-      if (_selectedIndex == 5 && _screens[_selectedIndex] is NotificationScreen) return 5;
-      
+      // Mobile screen mapping
+      if (_selectedIndex == 4 && _screens[4] is MessagesScreen) return 4;
+      if (_selectedIndex == 5 && _screens[5] is NotificationScreen) return 5;
+
       switch (_selectedIndex) {
-        case 0: return 0;
-        case 1: return 2;
-        case 2: return 3;
-        case 3: return 6;
-        case 4: return 7;
+        case 0: return 0; // Home
+        case 1: return 1; // Search
+        case 2: return 3; // Reels
+        case 3: return 6; // Create
+        case 4: return 7; // Profile
         default: return 0;
       }
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     int screenIndex = _getDisplayScreenIndex();
-    
+
     return LayoutBuilder(builder: (context, constraints) {
       if (constraints.maxWidth > 800) {
         return _buildWebLayout(screenIndex);
@@ -133,6 +147,7 @@ class _HomePageState extends State<HomePage> {
       }
     });
   }
+
 
   Widget _buildMobileLayout(int screenIndex) {
     return Scaffold(
@@ -154,8 +169,8 @@ class _HomePageState extends State<HomePage> {
         unselectedItemColor: Colors.black54,
         items: [
           BottomNavigationBarItem(icon: Icon(_selectedIndex == 0 ? Icons.home : Icons.home_outlined), label: 'Home'),
-          const BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          const BottomNavigationBarItem(icon: Icon(Icons.movie_outlined), label: 'Reels'),
+          BottomNavigationBarItem(icon: Icon(_selectedIndex == 1 ? Icons.search : Icons.search_outlined), label: 'Search'),
+          BottomNavigationBarItem(icon: Icon(_selectedIndex == 2 ? Icons.movie : Icons.movie_outlined), label: 'Reels'),
           const BottomNavigationBarItem(icon: Icon(Icons.add_box_outlined), label: 'Add'),
           const BottomNavigationBarItem(
             icon: CircleAvatar(radius: 12, backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11')),
@@ -165,6 +180,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
 
   Widget _buildWebLayout(int screenIndex) {
     return Scaffold(
@@ -199,8 +215,8 @@ class _HomePageState extends State<HomePage> {
                   Padding(
                     padding: const EdgeInsets.only(left: 30, top: 40, right: 20),
                     child: SizedBox(
-                      width: 320, 
-                      child: SuggestedSidebar(onProfileTap: () => _navigateToProfile())
+                        width: 320,
+                        child: SuggestedSidebar(onProfileTap: () => _navigateToProfile())
                     ),
                   ),
               ],
@@ -212,11 +228,14 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+
 class WebSidebar extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onTap;
 
+
   const WebSidebar({super.key, required this.selectedIndex, required this.onTap});
+
 
   @override
   Widget build(BuildContext context) {
@@ -252,6 +271,7 @@ class WebSidebar extends StatelessWidget {
   }
 }
 
+
 class _SidebarItem extends StatelessWidget {
   final IconData? icon;
   final Widget? iconWidget;
@@ -259,7 +279,9 @@ class _SidebarItem extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
+
   const _SidebarItem({this.icon, this.iconWidget, required this.label, required this.isSelected, required this.onTap});
+
 
   @override
   Widget build(BuildContext context) {
@@ -282,3 +304,5 @@ class _SidebarItem extends StatelessWidget {
     );
   }
 }
+
+

@@ -9,6 +9,7 @@ class PostData {
   bool isSaved;
   final List<String> comments; // New field for comments
 
+
   PostData({
     required this.name,
     required this.profile,
@@ -21,8 +22,10 @@ class PostData {
     List<String>? comments,
   }) : comments = comments ?? [];
 
+
   bool get isLiked => reaction != 'None';
 }
+
 
 final List<Map<String, String>> stories = [
   {'name': 'Your Story', 'image': 'https://i.pravatar.cc/150?img=11'},
@@ -32,6 +35,7 @@ final List<Map<String, String>> stories = [
   {'name': 'diana', 'image': 'https://i.pravatar.cc/150?img=4'},
   {'name': 'eva', 'image': 'https://i.pravatar.cc/150?img=5'},
 ];
+
 
 final List<PostData> posts = [
   PostData(
@@ -54,3 +58,5 @@ final List<PostData> posts = [
       caption: 'Golden hour at the beach! 🌅',
       likes: 124),
 ];
+
+
